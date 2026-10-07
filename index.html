@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Justine BSL - interactive prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFF7EE; --cream2:#FFF1E0; --ink:#3A322C; --sub:#7A6C61;
+    --amber:#F2B134; --amber-d:#D99A18; --teal:#4FB8A8; --coral:#EF7A5A;
+    --line:#EBDCCB; --card:#FFFFFF;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--cream); color:var(--ink);
+    font-family:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;
+    line-height:1.55; font-size:17px; -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 20px 80px}
+
+  /* ---------- masthead ---------- */
+  .top{background:var(--cream2);border-top:7px solid var(--amber);padding:26px 20px 22px}
+  .top .inner{max-width:880px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .mark{font-size:27px;font-weight:900;letter-spacing:-.4px}
+  .mark span{color:var(--amber-d)}
+  .badge{background:var(--ink);color:var(--cream);font-size:11px;font-weight:800;
+         letter-spacing:1.6px;padding:5px 11px;border-radius:20px;text-transform:uppercase}
+  .tag{font-size:12px;font-weight:800;letter-spacing:2px;color:#B08A3E;text-transform:uppercase;
+       flex-basis:100%;margin-top:-4px}
+
+  /* ---------- hero ---------- */
+  .hero{display:flex;gap:26px;align-items:center;margin:34px 0 10px;flex-wrap:wrap}
+  .hero .who{flex:1 1 300px;min-width:260px}
+  .avatar{width:180px;height:180px;border-radius:28px;flex:0 0 auto;
+          box-shadow:0 10px 30px rgba(196,150,96,.28);background:var(--cream2)}
+  h1{font-size:31px;font-weight:900;line-height:1.22;margin:0 0 10px;letter-spacing:-.5px}
+  h1 em{font-style:normal;background:linear-gradient(transparent 62%,rgba(242,177,52,.65) 62%)}
+  .sub{color:var(--sub);font-size:16px;margin:0}
+
+  /* ---------- cards ---------- */
+  .card{background:var(--card);border-radius:22px;padding:26px;margin:24px 0;
+        box-shadow:0 4px 20px rgba(196,150,96,.13)}
+  .card h2{font-size:21px;font-weight:900;margin:0 0 6px;display:flex;align-items:center;gap:11px}
+  .num{background:var(--amber);color:var(--ink);width:30px;height:30px;border-radius:10px;
+       display:inline-flex;align-items:center;justify-content:center;font-size:15px;flex:0 0 auto}
+  .card p.lead{color:var(--sub);margin:0 0 18px;font-size:15px}
+
+  /* ---------- form ---------- */
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  input[type=text]{flex:1 1 220px;min-width:0;font:inherit;padding:14px 16px;border-radius:14px;
+                   border:2px solid var(--line);background:#FFFDFA;color:var(--ink)}
+  input[type=text]:focus{outline:none;border-color:var(--amber)}
+  button{font:inherit;font-weight:800;padding:14px 22px;border-radius:14px;border:0;cursor:pointer;
+         background:var(--amber);color:var(--ink);transition:.15s}
+  button:hover{background:var(--amber-d)}
+  button.ghost{background:#F3EAE0;color:var(--ink)}
+  button.ghost:hover{background:#EADCCD}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .chip{background:#F6EFE6;border:1px solid var(--line);border-radius:20px;padding:6px 14px;
+        font-size:14px;font-weight:700;color:var(--sub);cursor:pointer}
+  .chip:hover{border-color:var(--amber);color:var(--ink)}
+
+  /* ---------- sign result ---------- */
+  .result{margin-top:20px;display:none}
+  .result.on{display:block}
+  .signword{font-size:26px;font-weight:900;margin:0 0 4px}
+  .signmeta{color:var(--sub);font-size:14px;margin:0 0 14px}
+  .slot{border:2.5px dashed var(--line);border-radius:16px;background:#FFFDFA;
+        padding:34px 20px;text-align:center;color:var(--sub)}
+  .slot b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+  .slot small{font-size:13px}
+
+  /* ---------- camera ---------- */
+  .stage{position:relative;border-radius:18px;overflow:hidden;background:#2A241F;
+         aspect-ratio:4/3;margin-bottom:14px}
+  video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+               transform:scaleX(-1)}   /* mirror: it is a mirror for the child */
+  canvas{pointer-events:none}
+  .target{display:flex;align-items:center;gap:14px;background:#FFFDFA;border:1px solid var(--line);
+          border-radius:16px;padding:14px 16px;margin-bottom:14px;flex-wrap:wrap}
+  .target .word{font-size:22px;font-weight:900}
+  .feedback{font-weight:800;font-size:16px;margin:12px 0 0;min-height:24px}
+  .meter{height:9px;background:#EFE2D2;border-radius:6px;overflow:hidden;margin-top:10px}
+  .meter i{display:block;height:100%;width:0;background:var(--teal);transition:width .12s linear}
+  .blocked{background:#FFF6F2;border:1px solid #F6D9CF;border-radius:14px;padding:14px 16px;
+           color:#8A4B39;font-size:14px;margin-top:12px;display:none}
+  .blocked.on{display:block}
+
+  /* ---------- chat ---------- */
+  .log{background:#FFFDFA;border:1px solid var(--line);border-radius:16px;padding:16px;
+       min-height:120px;max-height:340px;overflow-y:auto;margin-bottom:12px}
+  .m{margin:0 0 12px}
+  .m b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1.2px;
+       color:#A89887;margin-bottom:2px}
+  .m.me b{color:var(--amber-d)}
+  .m .bub{background:#F6EFE6;border-radius:12px;padding:10px 13px;display:inline-block;
+          max-width:100%;white-space:pre-wrap}
+  .m.me .bub{background:#FFF3D9}
+
+  /* ---------- honesty ---------- */
+  .truth{border-left:4px solid var(--coral);background:#FFF6F2;border-radius:0 14px 14px 0;
+         padding:16px 18px;margin:22px 0;font-size:15px}
+  .truth b{color:#8A4B39}
+  .ok{border-left-color:var(--teal);background:#F3FBF9}
+  .ok b{color:#2F7A6E}
+  ul.list{margin:8px 0 0;padding-left:20px;font-size:15px;color:var(--sub)}
+  ul.list li{margin-bottom:6px}
+  .foot{margin-top:40px;padding-top:18px;border-top:2px solid var(--amber);
+        color:var(--sub);font-size:13.5px}
+  .spin{display:inline-block;width:13px;height:13px;border:2.5px solid rgba(0,0,0,.16);
+        border-top-color:var(--ink);border-radius:50%;animation:sp .7s linear infinite;
+        vertical-align:-2px;margin-right:7px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="inner">
+  <div class="mark">Justine <span>BSL</span></div>
+  <div class="badge">Prototype</div>
+  <div class="tag">Bringing British Sign Language into the family home</div>
+</div></div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <img class="avatar" src="avatar.png" alt="Justine">
+    <div class="who">
+      <h1>Your child's first language starts at <em>your kitchen table</em>.</h1>
+      <p class="sub">A working prototype. Type a word and see the sign. Practise with the camera.
+      Ask the guide a question. Everything on this page is real code, and where something is not
+      built yet it says so rather than pretending.</p>
+    </div>
+  </div>
+
+  <!-- ================= 1 ================= -->
+  <div class="card">
+    <h2><span class="num">1</span> Type a word, see the sign</h2>
+    <p class="lead">Type anything. The app looks the word up and plays the real sign.</p>
+    <div class="row">
+      <input type="text" id="q" placeholder="milk, thank you, school, hello..." autocomplete="off">
+      <button onclick="lookup()">Show me</button>
+    </div>
+    <div class="chips" id="chips"></div>
+
+    <div class="result" id="res">
+      <p class="signword" id="rw"></p>
+      <p class="signmeta" id="rm"></p>
+      <div class="slot" id="rslot"></div>
+    </div>
+  </div>
+
+  <div class="truth">
+    <b>Why the sign is filmed, not drawn.</b> BSL is not English in a different order - it has its
+    own grammar, and much of that grammar lives in the face and body, not only the hands. An AI
+    asked to <i>generate</i> a sign will produce something confident and wrong. So the cartoon is
+    the guide, and the signing is always real footage of a real signer - which, here, means Justine.
+  </div>
+
+  <!-- ================= 2 ================= -->
+  <div class="card">
+    <h2><span class="num">2</span> Practise with the camera</h2>
+    <p class="lead">Hand tracking runs on this device. Nothing is uploaded, and no video leaves
+    your phone or laptop.</p>
+
+    <div class="target">
+      <span style="font-size:13px;font-weight:800;letter-spacing:1.2px;color:#A89887">SHOW ME</span>
+      <span class="word" id="targetWord">hello</span>
+      <button class="ghost" onclick="nextTarget()">Next word</button>
+    </div>
+
+    <div class="stage">
+      <video id="cam" playsinline muted autoplay></video>
+      <canvas id="overlay"></canvas>
+    </div>
+
+    <div class="row">
+      <button id="startBtn" onclick="startCam()">Start the camera</button>
+      <button class="ghost" id="stopBtn" onclick="stopCam()" disabled>Stop</button>
+    </div>
+
+    <p class="feedback" id="fb">Press start and allow the camera.</p>
+    <div class="meter"><i id="bar"></i></div>
+
+    <div class="blocked" id="blocked"></div>
+  </div>
+
+  <div class="truth ok">
+    <b>What this can honestly do.</b> The camera tracks the position of the hands, live, in the
+    browser. That is enough to see a hand, count it, and tell whether it is being held steady.
+    <br><br>
+    <b>What it cannot do - and this matters.</b> It does <b>not</b> understand BSL. Nobody has a
+    system that reliably recognises arbitrary signing from a webcam, and any product claiming it is
+    claiming something untrue. So the game here is a <b>closed set</b>: the app asks for one sign it
+    has just shown you, and one day will check your handshape against Justine's own filmed version of
+    that same sign. That is a matching job, not understanding - and it is the only honest version.
+  </div>
+
+  <!-- ================= 3 ================= -->
+  <div class="card">
+    <h2><span class="num">3</span> Ask the guide</h2>
+    <p class="lead">This one is not scripted. It is a real Hermes agent answering, with a brief it
+    is not allowed to break.</p>
+    <div class="log" id="log">
+      <div class="m"><b>Justine's guide</b><span class="bub">Hello. I can explain how BSL works,
+      what to expect in a first lesson, and what to say to your child's school. I cannot show you
+      signs myself - for that, watch Justine. Ask me anything.</span></div>
+    </div>
+    <div class="row">
+      <input type="text" id="msg" placeholder="Do we need to know any BSL to start?"
+             onkeydown="if(event.key==='Enter')send()">
+      <button onclick="send()" id="sendBtn">Ask</button>
+    </div>
+  </div>
+
+  <div class="truth">
+    <b>The guide's rules.</b> It is a real AI agent, driven by Hermes, with its full toolkit behind
+    it. It is instructed: never claim to be Justine; never claim to be a person; never invent a
+    sign or describe a sign in words as if that teaches it; always send sign questions to Justine's
+    real videos. On a product for deaf children, those rules are the product.
+  </div>
+
+  <div class="foot">
+    <b>Justine BSL - prototype.</b> Built to be looked at, not shipped. Real: the sign lookup, the
+    hand tracking, the agent. Not real yet: the sign footage (awaiting Justine's clips), the
+    handshape templates for scoring, accounts, payments and progress saving. Sign video is currently
+    a labelled placeholder, and the camera check scores steadiness only.<br><br>
+    British Sign Language - not ASL. Warm palette and type matched to Justine's existing starter kit.
+  </div>
+
+</div>
+
+<script type="module">
+/* ------------------------------------------------------------------ *
+ * 1. SIGN LOOKUP
+ * The lookup is real; the footage is not shot yet, and says so.
+ * ------------------------------------------------------------------ */
+// Words we have, or will have, a filmed sign for.
+// 🔴 DELIBERATELY NO TEXT DESCRIPTION OF ANY SIGN. An earlier version of this file
+// carried a one-line description per word ("two fists, one opening and closing").
+// That was wrong twice over: it describes signs in words, which is inventing them,
+// and the descriptions were made up. A guessed sign is worse than a missing one.
+// The sign comes from the film, or it does not come at all.
+const BANK = new Set([
+  "hello","thank you","please","milk","water","mummy","daddy","school",
+  "toilet","more","finished","again","sorry","help","good morning"
+]);
+
+const chipWords = ["milk","thank you","toilet","again","more","help","school","sorry"];
+const chips = document.getElementById('chips');
+chipWords.forEach(w=>{
+  const c=document.createElement('span');
+  c.className='chip'; c.textContent=w;
+  c.onclick=()=>{document.getElementById('q').value=w;lookup();};
+  chips.appendChild(c);
+});
+
+function lookup(){
+  const raw = document.getElementById('q').value.trim().toLowerCase();
+  if(!raw){return;}
+  const res=document.getElementById('res');
+  res.classList.add('on');
+  document.getElementById('rw').textContent = raw;
+  const known = BANK.has(raw);
+  document.getElementById('rm').textContent = known
+      ? "In the word bank."
+      : "Not in the starter word bank yet.";
+  document.getElementById('rslot').innerHTML = known
+    ? "<b>This is where Justine's clip of &lsquo;"+raw+"&rsquo; plays</b>"+
+      "<small>Not filmed yet. It plays a real signer - never a synthesised one.</small>"
+    : "<b>We do not have this one yet</b>"+
+      "<small>Rather than guess a sign, the app says so. A guessed sign is worse than a missing one.</small>";
+}
+// module scope is not window scope: every inline onclick/onkeydown needs the
+// handler exposed explicitly or it dies with "not defined".
+window.lookup = lookup;
+
+/* ------------------------------------------------------------------ *
+ * 2. CAMERA  - MediaPipe hand landmarks, on-device
+ * ------------------------------------------------------------------ */
+import { FilesetResolver, HandLandmarker }
+  from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.0/vision_bundle.mjs";
+
+const WORDS = ["hello","milk","thank you","more","again","school","finished","please"];
+let targetIdx = 0, landmarker = null, stream = null, raf = null;
+let holdStart = null;
+
+const video   = document.getElementById('cam');
+const overlay = document.getElementById('overlay');
+const ctx     = overlay.getContext('2d');
+
+function setTarget(){
+  document.getElementById('targetWord').textContent = WORDS[targetIdx % WORDS.length];
+}
+setTarget();
+window.nextTarget = ()=>{ targetIdx++; holdStart=null; setTarget();
+  document.getElementById('bar').style.width='0%';
+  if(landmarker) speak("Now show me: "+WORDS[targetIdx % WORDS.length]); };
+
+function speak(t){ document.getElementById('fb').textContent = t; }
+
+function show(msg){ const b=document.getElementById('blocked'); b.textContent=msg; b.classList.add('on'); }
+
+async function startCam(){
+  document.getElementById('startBtn').disabled = true;
+  speak("Loading the hand tracker (about 8MB, one time)...");
+  try{
+    const fileset = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.0/wasm");
+    const opts = {
+      baseOptions:{ modelAssetPath:
+        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task" },
+      runningMode:"VIDEO", numHands:2
+    };
+    try{ landmarker = await HandLandmarker.createFromOptions(fileset,{...opts,
+         baseOptions:{...opts.baseOptions, delegate:"GPU"}}); }
+    catch(e){ landmarker = await HandLandmarker.createFromOptions(fileset,
+         {...opts, baseOptions:{...opts.baseOptions, delegate:"CPU"}}); }
+  }catch(e){
+    show("The hand tracker could not load. " + e.message);
+    document.getElementById('startBtn').disabled=false; return;
+  }
+
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:640,height:480}});
+  }catch(e){
+    show("No camera access: " + e.name + ". A camera only works over https:// or on localhost - "
+       + "and you have to allow permission.");
+    document.getElementById('startBtn').disabled=false; return;
+  }
+
+  video.srcObject = stream;
+  await video.play();
+  overlay.width  = video.videoWidth  || 640;
+  overlay.height = video.videoHeight || 480;
+  document.getElementById('stopBtn').disabled = false;
+  speak("Camera on. Hold one hand up, then hold it steady.");
+  loop();
+  window._last = performance.now();
+}
+
+function loop(){
+  if(!landmarker || !stream){return;}
+  const now = performance.now();
+  if(video.currentTime !== window._lastVT){
+    window._lastVT = video.currentTime;
+    const out = landmarker.detectForVideo(video, now);
+    draw(out);
+  }
+  raf = requestAnimationFrame(loop);
+}
+
+function draw(out){
+  ctx.clearRect(0,0,overlay.width,overlay.height);
+  const hands = (out && out.landmarks) || [];
+  const cw = overlay.width, ch = overlay.height;
+
+  if(hands.length === 0){
+    holdStart = null;
+    document.getElementById('bar').style.width = '0%';
+    speak("I cannot see a hand. Hold it up, in front of you, palm towards the camera.");
+    return;
+  }
+
+  const EDGES=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],
+               [9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+  hands.forEach(h=>{
+    ctx.fillStyle='#F2B134'; ctx.strokeStyle='#4FB8A8'; ctx.lineWidth=3;
+    EDGES.forEach(([a,b])=>{
+      ctx.beginPath();
+      ctx.moveTo(h[a].x*cw, h[a].y*ch);
+      ctx.lineTo(h[b].x*cw, h[b].y*ch);
+      ctx.stroke();
+    });
+    h.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x*cw,p.y*ch,5,0,7); ctx.fill(); });
+  });
+
+  const word = WORDS[targetIdx % WORDS.length];
+  if(holdStart === null){ holdStart = performance.now(); }
+  const held = (performance.now() - holdStart)/1000;
+  const pct  = Math.min(100, (held/2.5)*100);
+  document.getElementById('bar').style.width = pct + '%';
+
+  if(held >= 2.5){
+    speak("Nice and steady. In the finished app that is matched against Justine's own "
+        + "handshape for \u201C" + word + "\u201D. The template is not filmed yet, so this only "
+        + "scores how still you were.");
+  } else {
+    speak(hands.length === 1
+      ? "Hand found. Hold it still - " + (2.5-held).toFixed(1) + "s"
+      : hands.length + " hands found. Hold still - " + (2.5-held).toFixed(1) + "s");
+  }
+}
+
+function stopCam(){
+  if(raf) cancelAnimationFrame(raf); raf=null;
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  video.srcObject=null;
+  ctx.clearRect(0,0,overlay.width,overlay.height);
+  document.getElementById('startBtn').disabled=false;
+  document.getElementById('stopBtn').disabled=true;
+  document.getElementById('bar').style.width='0%';
+  speak("Camera off. Nothing was recorded and nothing was uploaded.");
+}
+window.startCam = startCam; window.stopCam = stopCam;
+
+/* ------------------------------------------------------------------ *
+ * 3. THE GUIDE  - a real Hermes agent behind this box
+ * ------------------------------------------------------------------ */
+const log = document.getElementById('log');
+const history = [];
+
+function bubble(who, text){
+  const d=document.createElement('div');
+  d.className='m'+(who==='You'?' me':'');
+  const b=document.createElement('b'); b.textContent=who;
+  const s=document.createElement('span'); s.className='bub'; s.textContent=text;
+  d.appendChild(b); d.appendChild(s); log.appendChild(d); log.scrollTop=log.scrollHeight;
+  return s;
+}
+
+window.send = async function(){
+  const box = document.getElementById('msg');
+  const text = box.value.trim();
+  if(!text) return;
+  box.value='';
+  bubble('You', text);
+  history.push({role:'user',content:text});
+  const btn=document.getElementById('sendBtn'); btn.disabled=true;
+  const pending = bubble("Justine's guide", "");
+  pending.innerHTML = '<span class="spin"></span>thinking...';
+  try{
+    const r = await fetch('/v1/chat/completions',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({model:'hermes-agent', stream:false, messages:history})
+    });
+    const j = await r.json();
+    const out = (j.choices && j.choices[0] && j.choices[0].message.content)
+              || (j.error && j.error.message) || 'No reply.';
+    pending.textContent = out;
+    history.push({role:'assistant',content:out});
+  }catch(e){
+    pending.textContent = "The agent is not reachable from this page (" + e.message +
+      "). The chat needs the local backend running.";
+  }
+  btn.disabled=false;
+};
+</script>
+</body>
+</html>
